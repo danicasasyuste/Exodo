@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "51124256983",
+    "project_id": "codethon-53527",
+    "storage_bucket": "codethon-53527.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:51124256983:android:a572db9d0099c40ec47092",
+        "android_client_info": {
+          "package_name": "com.example.codethon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBF-a3enbIah06bL3ZzrO5LRNw_Lod8guc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
