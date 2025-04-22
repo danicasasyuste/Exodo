@@ -9,14 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # Firebase Core (obligatorio para cualquier servicio de Firebase)
+  http: ^0.13.4 
+  intl: ^0.19.0
   firebase_core: ^2.25.4
 
-  # Cloud Firestore (base de datos)
   cloud_firestore: ^4.12.2
 
-  # Íconos estilo iOS
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
