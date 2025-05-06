@@ -2,7 +2,8 @@
     package="com.example.codethon">
 
     <!-- Permisos -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
@@ -20,7 +21,9 @@
         android:label="ClimaColab"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:exported="true">
+        
 
         <activity
             android:name=".MainActivity"

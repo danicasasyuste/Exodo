@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import '../services/weather_service.dart';
 import '../models/weather.dart';
+import '../models/weather_override.dart';
+import '../services/response_analysis_service.dart';
+import '../services/notification_service.dart';
+
 import '../screens/map_screen.dart';
 
 class WeatherScreen extends StatefulWidget {
@@ -27,6 +31,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
   List<Weather>? _forecast;
   List<Weather>? _hourlyForecast;
   final TextEditingController _searchController = TextEditingController();
+  final WeatherOverride _override = WeatherOverride();
+  Timer? _verificacionTimer;
   String _selectedCity = '39.4699,-0.3763';
   //bool _showClearIcon = false;
   Timer? _updateTimer;
@@ -139,11 +145,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
     _updateTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       _fetchWeather();
     });
+    _verificacionTimer = Timer.periodic(const Duration(minutes: 10), (_) {
+      _evaluarRespuestas();
+    });
   }
 
   @override
   void dispose() {
     _updateTimer?.cancel();
+    _verificacionTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -166,6 +176,31 @@ class _WeatherScreenState extends State<WeatherScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al cargar los datos: $e')));
+    }
+    if (_currentWeather!.description.toLowerCase().contains('rain')) {
+      NotificationService.mostrarPregunta(
+        _selectedCity,
+        'lluvia',
+        '¿Sigue lloviendo en tu zona?',
+      );
+    }
+  }
+
+  Future<void> _evaluarRespuestas() async {
+    final modificar = await ResponseAnalysisService.debeModificarEstado(
+      _selectedCity,
+      'lluvia',
+    );
+    if (modificar) {
+      setState(() {
+        _override.overrideActiva = true;
+        _override.lluvia = false;
+      });
+      NotificationService.notificarCambioEstado('✅ Ha dejado de llover');
+    } else {
+      setState(() {
+        _override.overrideActiva = false;
+      });
     }
   }
 
@@ -209,7 +244,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
         isNight ? const Color(0xFF1B263B) : const Color(0xFFE6F0FA);
     final Color sombra =
         isNight ? const Color.fromARGB(30, 65, 90, 119) : Colors.black12;
-    final String backgroundImage = isNight ? 'assets/images/maps_card_night.jpg' : 'assets/images/maps_card_night.jpg';
+    final String backgroundImage =
+        isNight
+            ? 'assets/images/maps_card_night.jpg'
+            : 'assets/images/maps_card_night.jpg';
 
     return Scaffold(
       backgroundColor: fondo,
@@ -359,9 +397,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              _translateDescription(
-                                _currentWeather!.description,
-                              ),
+                              _override.overrideActiva && !_override.lluvia
+                                  ? 'Sin lluvia (verificado)'
+                                  : _translateDescription(
+                                    _currentWeather!.description,
+                                  ),
+
                               style: TextStyle(
                                 fontSize: 20,
                                 color: texto.withAlpha(230),
@@ -473,8 +514,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                   color: card,
                                   borderRadius: BorderRadius.circular(16),
                                   image: DecorationImage(
-                                      image: AssetImage(backgroundImage),
-                                      fit: BoxFit.cover,
+                                    image: AssetImage(backgroundImage),
+                                    fit: BoxFit.cover,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
