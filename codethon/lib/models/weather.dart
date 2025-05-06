@@ -3,6 +3,7 @@ class Weather {
   final String description;
   final String iconUrl;
   final double temperature;
+  final double feelsLike;
   final int humidity;
   final double windSpeed;
   final int pressure;
@@ -12,6 +13,7 @@ class Weather {
     required this.description,
     required this.iconUrl,
     required this.temperature,
+    required this.feelsLike,
     required this.humidity,
     required this.windSpeed,
     required this.pressure,
@@ -23,6 +25,7 @@ class Weather {
       description: json['current']['condition']['text'],
       iconUrl: 'https:${json['current']['condition']['icon']}',
       temperature: json['current']['temp_c'].toDouble(),
+      feelsLike: json['current']['feelslike_c'].toDouble(),
       humidity: json['current']['humidity'],
       windSpeed: json['current']['wind_kph'].toDouble(),
       pressure: json['current']['pressure_mb'].toInt(),
@@ -35,9 +38,10 @@ class Weather {
       description: json['day']['condition']['text'],
       iconUrl: 'https:${json['day']['condition']['icon']}',
       temperature: json['day']['avgtemp_c'].toDouble(),
+      feelsLike: json['day']['avgtemp_c'].toDouble(),
       humidity: json['day']['avghumidity'].toInt(),
       windSpeed: json['day']['maxwind_kph'].toDouble(),
-      pressure: 0, // WeatherAPI no da presión diaria en forecast
+      pressure: 0, // No disponible en forecast
     );
   }
 }

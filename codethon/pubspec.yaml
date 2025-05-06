@@ -9,13 +9,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.4 
+  http: ^1.2.1
   intl: ^0.19.0
   firebase_core: ^2.25.4
-
   cloud_firestore: ^4.12.2
-
   cupertino_icons: ^1.0.8
+  logger: ^2.0.2
+  flutter_map_marker_cluster: ^1.1.1 
+  lottie: ^2.6.0
+  geolocator: ^11.0.0
+  geocoding: ^2.2.0
+  universal_html: ^2.2.2
+  flutter_map: ^6.0.0
+  latlong2: ^0.9.0
+  webview_flutter: ^4.4.2
 
 dev_dependencies:
   flutter_test:
@@ -24,3 +31,20 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/lottie/rain.json
+    - assets/lottie/wind.json
+    - assets/lottie/radar.json
+    - assets/lottie/load.json
+    - assets/lottie/load2.json
+    - assets/lottie/load3.json
+    - assets/lottie/weather/cloudy.json
+    - assets/lottie/weather/fog.json
+    - assets/lottie/weather/lighting.json
+    - assets/lottie/weather/night.json
+    - assets/lottie/weather/night-cloud.json
+    - assets/lottie/weather/night-rain.json
+    - assets/lottie/weather/rain-light.json
+    - assets/lottie/weather/sunny.json
+    - assets/images/maps_card_bg.png
+
