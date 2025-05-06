@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import './screens/weather_screen.dart';
+//import './screens/weather_screen.dart';
+import './screens/intro_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
@@ -9,7 +10,7 @@ void main() async {
 }
 
 class WeatherApp extends StatelessWidget {
-  const WeatherApp({super.key});
+  const WeatherApp({super.key});  
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class WeatherApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const WeatherScreen(),
+      home: const IntroScreen(),
     );
   }
 }

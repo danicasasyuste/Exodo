@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -24,10 +25,95 @@ class _WeatherScreenState extends State<WeatherScreen> {
   final WeatherService _weatherService = WeatherService();
   Weather? _currentWeather;
   List<Weather>? _forecast;
+  List<Weather>? _hourlyForecast;
   final TextEditingController _searchController = TextEditingController();
   String _selectedCity = '39.4699,-0.3763';
   bool _showClearIcon = false;
   Timer? _updateTimer;
+  bool _showLoading = true;
+
+  void _showHourlyPopup(BuildContext context) {
+    if (_hourlyForecast == null || _hourlyForecast!.isEmpty) return;
+
+    final bool isNight = DateTime.now().hour >= 20 || DateTime.now().hour < 6;
+    final Color fondoPopup = isNight ? const Color(0xFF1B263B) : Colors.white;
+    final Color textoPopup = isNight ? const Color(0xFFE0E1DD) : Colors.black87;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: fondoPopup,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+          title: Text(
+            'Clima por horas',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: textoPopup,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 420,
+            child: ListView.builder(
+              itemCount: _hourlyForecast!.length,
+              itemBuilder: (context, index) {
+                final item = _hourlyForecast![index];
+                final hora = DateFormat.Hm('es_ES').format(item.date);
+                final icon = item.iconUrl;
+                final temp = item.temperature;
+                final desc = _translateDescription(item.description);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Image.network(icon, width: 34, height: 34),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$hora - $desc',
+                              style: TextStyle(color: textoPopup, fontSize: 15),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '${temp.toStringAsFixed(1)}°C',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: textoPopup,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          actionsPadding: const EdgeInsets.only(right: 16, bottom: 12),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cerrar', style: TextStyle(color: textoPopup)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   final List<MunicipioValenciano> municipiosValencianos = [
     MunicipioValenciano(nombre: 'Valencia', query: '39.4699,-0.3763'),
@@ -72,10 +158,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
     try {
       final weather = await _weatherService.getWeather(_selectedCity);
       final forecast = await _weatherService.getForecast(_selectedCity);
+      final hourly = await _weatherService.getHourlyForecast(_selectedCity);
+
       if (!mounted) return;
+
       setState(() {
         _currentWeather = weather;
         _forecast = forecast;
+        _hourlyForecast = hourly;
       });
     } catch (e) {
       if (!mounted) return;
@@ -121,6 +211,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
     final Color card = isNight ? const Color(0xFF1B263B) : Colors.white;
     final Color texto = isNight ? const Color(0xFFE0E1DD) : Colors.black87;
     final Color icono = isNight ? const Color(0xFFA5B3C5) : Colors.black87;
+    final Color dropDown =
+        isNight ? const Color(0xFF1B263B) : const Color(0xFFE6F0FA);
     final Color sombra =
         isNight ? const Color.fromARGB(30, 65, 90, 119) : Colors.black12;
 
@@ -128,8 +220,21 @@ class _WeatherScreenState extends State<WeatherScreen> {
       backgroundColor: fondo,
       body: SafeArea(
         child:
-            _currentWeather == null
-                ? const Center(child: CircularProgressIndicator())
+            _showLoading || _currentWeather == null
+                ? Center(
+                  child: Lottie.asset(
+                    'assets/lottie/intro.json',
+                    width: 180,
+                    onLoaded: (composition) {
+                      Future.delayed(composition.duration, () {
+                        _fetchWeather();
+                        setState(() {
+                          _showLoading = false;
+                        });
+                      });
+                    },
+                  ),
+                )
                 : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -137,59 +242,92 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: card,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: sombra,
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(Icons.location_on, color: icono),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<MunicipioValenciano>(
-                                  value: municipiosValencianos.firstWhere(
-                                    (m) => m.query == _selectedCity,
-                                    orElse: () => municipiosValencianos[0],
+                            Row(
+                              children: [
+                                Icon(Icons.location_on, color: icono, size: 37),
+                                const SizedBox(width: 8),
+                                DropdownButtonHideUnderline(
+                                  child: DropdownButton2<MunicipioValenciano>(
+                                    isExpanded: true,
+                                    customButton: SizedBox(
+                                      width: 150, // o el ancho que tú prefieras
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              municipiosValencianos
+                                                  .firstWhere(
+                                                    (m) =>
+                                                        m.query ==
+                                                        _selectedCity,
+                                                    orElse:
+                                                        () =>
+                                                            municipiosValencianos[0],
+                                                  )
+                                                  .nombre,
+                                              style: TextStyle(
+                                                color: texto,
+                                                fontSize: 23,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_drop_down,
+                                            color: icono,
+                                            size: 32,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    dropdownStyleData: DropdownStyleData(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: dropDown,
+                                      ),
+                                      offset: const Offset(0, -8),
+                                      maxHeight: kMinInteractiveDimension * 5,
+                                    ),
+                                    value: municipiosValencianos.firstWhere(
+                                      (m) => m.query == _selectedCity,
+                                      orElse: () => municipiosValencianos[0],
+                                    ),
+                                    items:
+                                        municipiosValencianos.map((m) {
+                                          return DropdownMenuItem(
+                                            value: m,
+                                            child: Text(
+                                              m.nombre,
+                                              style: TextStyle(color: texto),
+                                            ),
+                                          );
+                                        }).toList(),
+                                    onChanged: (MunicipioValenciano? newValue) {
+                                      if (newValue != null) {
+                                        setState(() {
+                                          _selectedCity = newValue.query;
+                                        });
+                                        _fetchWeather();
+                                      }
+                                    },
                                   ),
-                                  icon: Icon(
-                                    Icons.arrow_drop_down,
-                                    color: icono,
-                                  ),
-                                  dropdownColor: card,
-                                  style: TextStyle(color: texto),
-                                  onChanged: (MunicipioValenciano? newValue) {
-                                    if (newValue != null) {
-                                      setState(() {
-                                        _selectedCity = newValue.query;
-                                      });
-                                      _fetchWeather();
-                                    }
-                                  },
-                                  items:
-                                      municipiosValencianos.map((m) {
-                                        return DropdownMenuItem(
-                                          value: m,
-                                          child: Text(m.nombre),
-                                        );
-                                      }).toList(),
                                 ),
-                              ),
+                              ],
                             ),
+                            Icon(Icons.calendar_today, color: icono, size: 28),
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 20),
                       SizedBox(
                         height: 120,
@@ -205,7 +343,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                         child: Column(
                           children: [
                             Text(
-                              '${_searchController.text.isNotEmpty ? _searchController.text : 'Tu ubicación'} tiene',
+                              '${municipiosValencianos.firstWhere((m) => m.query == _selectedCity, orElse: () => municipiosValencianos[0]).nombre} tiene',
                               style: TextStyle(
                                 fontSize: 20,
                                 color: texto.withAlpha(230),
@@ -213,12 +351,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '${_currentWeather!.temperature}°C',
-                              style: TextStyle(
-                                fontSize: 60,
-                                fontWeight: FontWeight.bold,
-                                color: texto,
+                            GestureDetector(
+                              onTap: () => _showHourlyPopup(context),
+                              child: Text(
+                                '${_currentWeather!.temperature}°C',
+                                style: TextStyle(
+                                  fontSize: 60,
+                                  fontWeight: FontWeight.bold,
+                                  color: texto,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -338,7 +479,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   image: const DecorationImage(
                                     image: AssetImage(
-                                      'assets/images/maps_card_bg.png',
+                                      'assets/images/maps_card.jpg',
                                     ),
                                     fit: BoxFit.cover,
                                   ),
@@ -490,6 +631,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
       'thundery outbreaks possible': 'Posibles brotes tormentosos',
       'thundery outbreaks in nearby': 'Posibles brotes tormentosos cerca',
       'patchy rain nearby': 'Lluvias intermitentes en las cercanías',
+      'partly cloudy': 'Parcialmente nublado',
+      'sunny': 'Soleado',
+      'clear': 'Despejado',
+      'cloudy' : 'Nublado',
     };
 
     for (final entrada in traducciones.entries) {
@@ -498,7 +643,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
       }
     }
 
-    return desc;
+    return toBeginningOfSentenceCase(desc) ?? desc;
   }
 
   Widget _infoCard(

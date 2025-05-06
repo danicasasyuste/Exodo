@@ -15,6 +15,14 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
   bool _isLoading = true;
   late DateTime _startTime;
 
+  bool get isNight {
+    final hour = DateTime.now().hour;
+    return hour >= 20 || hour < 6;
+  }
+
+  Color get card => isNight ? const Color(0xFF1B263B) : Colors.white;
+  Color get texto => isNight ? const Color(0xFFE0E1DD) : Colors.black87;
+
   final String windyBaseUrl =
       'https://embed.windy.com/embed2.html'
       '?lat=39.4699&lon=-0.3763'
@@ -40,23 +48,25 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
   void initState() {
     super.initState();
     _startTime = DateTime.now();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) async {
-            final elapsed = DateTime.now().difference(_startTime).inMilliseconds;
-            final delay = elapsed < 2000 ? 2000 - elapsed : 0;
-            await Future.delayed(Duration(milliseconds: delay));
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(windyBaseUrl));
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageFinished: (_) async {
+                final elapsed =
+                    DateTime.now().difference(_startTime).inMilliseconds;
+                final delay = elapsed < 2000 ? 2000 - elapsed : 0;
+                await Future.delayed(Duration(milliseconds: delay));
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(windyBaseUrl));
   }
 
   @override
@@ -79,9 +89,7 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
                       WebViewWidget(controller: _controller),
                       IgnorePointer(
                         ignoring: false,
-                        child: Container(
-                          color: Colors.transparent,
-                        ),
+                        child: Container(color: Colors.transparent),
                       ),
                     ],
                   ),
@@ -92,7 +100,7 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
         ),
         if (_isLoading)
           Container(
-            color: Colors.white,
+            color: card,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -103,12 +111,12 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
                     child: Lottie.asset('assets/lottie/load3.json'),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Cargando mapa de viento...',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey,
+                      color: texto.withOpacity(0.8),
                     ),
                   ),
                 ],

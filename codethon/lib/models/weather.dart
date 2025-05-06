@@ -32,6 +32,19 @@ class Weather {
     );
   }
 
+  factory Weather.fromJsonHourly(Map<String, dynamic> json) {
+    return Weather(
+      date: DateTime.parse(json['time']),
+      temperature: json['temp_c'].toDouble(),
+      description: json['condition']['text'],
+      iconUrl: 'https:${json['condition']['icon']}',
+      windSpeed: json['wind_kph'].toDouble(),
+      humidity: json['humidity'],
+      pressure: json['pressure_mb'].toInt(),
+      feelsLike: json['feelslike_c'].toDouble(),
+    );
+  }
+
   factory Weather.fromJsonForecast(Map<String, dynamic> json) {
     return Weather(
       date: DateTime.parse(json['date']),

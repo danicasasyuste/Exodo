@@ -23,6 +23,8 @@ dependencies:
   flutter_map: ^6.0.0
   latlong2: ^0.9.0
   webview_flutter: ^4.4.2
+  flutter_launcher_icons: ^0.13.1
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:
@@ -46,5 +48,12 @@ flutter:
     - assets/lottie/weather/night-rain.json
     - assets/lottie/weather/rain-light.json
     - assets/lottie/weather/sunny.json
+    - assets/lottie/intro.json
     - assets/images/maps_card_bg.png
+    - assets/images/maps_card.jpg
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
 

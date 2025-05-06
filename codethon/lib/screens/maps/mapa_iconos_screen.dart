@@ -7,7 +7,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart' show Lottie;
 
-
 class MapaIconosScreen extends StatelessWidget {
   const MapaIconosScreen({super.key});
 
@@ -28,6 +27,14 @@ class WeatherIconMap extends StatefulWidget {
   @override
   State<WeatherIconMap> createState() => _WeatherIconMapState();
 }
+
+bool get isNight {
+  final hour = DateTime.now().hour;
+  return hour >= 20 || hour < 6;
+}
+
+Color get card => isNight ? const Color(0xFF1B263B) : Colors.white;
+Color get texto => isNight ? const Color(0xFFE0E1DD) : Colors.black87;
 
 class _WeatherIconMapState extends State<WeatherIconMap> {
   final String apiKey = '8eba0ec11c7728b0913cd629b626e0dd';
@@ -88,7 +95,7 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
     {"name": "Peñíscola", "lat": 40.3560, "lon": 0.4034},
     {"name": "Llíria", "lat": 39.6285, "lon": -0.5985},
     {"name": "Chelva", "lat": 39.7503, "lon": -0.9875},
-    {"name": "Casinos", "lat": 39.7163, "lon": -0.7160}
+    {"name": "Casinos", "lat": 39.7163, "lon": -0.7160},
   ];
 
   final Map<String, Map<String, dynamic>> weatherData = {};
@@ -96,7 +103,6 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
   double currentZoom = 8.8;
   bool isNight = false;
 
-  
   LatLng? userLocation;
   LatLng? closestLocation;
 
@@ -125,10 +131,17 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
     LatLng? nearest;
 
     weatherData.forEach((name, data) {
-      final city = [...mainCities, ...smallTowns].firstWhere((c) => c['name'] == name, orElse: () => {});
+      final city = [
+        ...mainCities,
+        ...smallTowns,
+      ].firstWhere((c) => c['name'] == name, orElse: () => {});
       if (city.isNotEmpty) {
         final LatLng pos = LatLng(city['lat'], city['lon']);
-        final double dist = Distance().as(LengthUnit.Kilometer, userLocation!, pos);
+        final double dist = Distance().as(
+          LengthUnit.Kilometer,
+          userLocation!,
+          pos,
+        );
         if (dist < minDistance) {
           minDistance = dist;
           nearest = pos;
@@ -176,7 +189,7 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
           "desc": data['weather'][0]['description'],
           "feels_like": data['main']['feels_like'].round(),
           "humidity": data['main']['humidity'],
-          "wind": data['wind']['speed'].toString()
+          "wind": data['wind']['speed'].toString(),
         };
       }
     }
@@ -186,9 +199,7 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
   }
 
   String getMapboxStyle() {
-    return isNight
-        ? 'mapbox/navigation-night-v1'
-        : 'mapbox/navigation-day-v1';
+    return isNight ? 'mapbox/navigation-night-v1' : 'mapbox/navigation-day-v1';
   }
 
   Color getColorForIcon(String icon) {
@@ -207,248 +218,260 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> allPlaces = [...mainCities, ...smallTowns];
 
-    List<Marker> markers = allPlaces.map((city) {
-      final isMainCity = mainCities.any((c) => c['name'] == city['name']);
-      final weather = weatherData[city['name']];
-      final point = LatLng(city['lat'], city['lon']);
+    List<Marker> markers =
+        allPlaces.map((city) {
+          final isMainCity = mainCities.any((c) => c['name'] == city['name']);
+          final weather = weatherData[city['name']];
+          final point = LatLng(city['lat'], city['lon']);
 
-      if (!isMainCity && currentZoom <= 10) {
-        return Marker(
-          width: 20,
-          height: 20,
-          point: point,
-          child: GestureDetector(
-            onTap: () {
-              mapController.move(point, (currentZoom + 2.5).clamp(8.8, 18.0));
-            },
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.grey,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        );
-      } else if (weather != null) {
-        final bgColor = getColorForIcon(weather["icon"]);
-        final isClosest = closestLocation != null &&
-          city['lat'] == closestLocation!.latitude &&
-          city['lon'] == closestLocation!.longitude;
-
-        return Marker(
-          width: 113,
-          height: 137,
-          point: point,
-          child: GestureDetector(
-            onTap: () => showWeatherDialog(city['name'], weather, bgColor),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isClosest ? Colors.red : Colors.transparent,
-                  width: 3,
+          if (!isMainCity && currentZoom <= 10) {
+            return Marker(
+              width: 20,
+              height: 20,
+              point: point,
+              child: GestureDetector(
+                onTap: () {
+                  mapController.move(
+                    point,
+                    (currentZoom + 2.5).clamp(8.8, 18.0),
+                  );
+                },
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    bgColor,
-                    Colors.white,
+              ),
+            );
+          } else if (weather != null) {
+            final bgColor = getColorForIcon(weather["icon"]);
+            final isClosest =
+                closestLocation != null &&
+                city['lat'] == closestLocation!.latitude &&
+                city['lon'] == closestLocation!.longitude;
+
+            return Marker(
+              width: 113,
+              height: 137,
+              point: point,
+              child: GestureDetector(
+                onTap: () => showWeatherDialog(city['name'], weather, bgColor),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isClosest ? Colors.red : Colors.transparent,
+                      width: 3,
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [bgColor, Colors.white],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(6),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.network(
+                        'https://openweathermap.org/img/wn/${weather["icon"]}@2x.png',
+                        width: 35,
+                        height: 35,
+                      ),
+                      Text(
+                        '${weather["temp"]}ºC',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.lightBlue,
+                        ),
+                      ),
+                      Text(
+                        city['name'],
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${weather["desc"]}',
+                        style: const TextStyle(fontSize: 10),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          } else {
+            return const Marker(point: LatLng(0, 0), child: SizedBox.shrink());
+          }
+        }).toList();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          isLoading
+              ? Container(
+                color:
+                    isNight ? const Color(0xFF1B263B) : Colors.white,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: Lottie.asset('assets/lottie/load.json'),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Cargando mapa del tiempo...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: isNight ? const Color(0xFFE0E1DD) : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              : FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  initialCenter: LatLng(39.5, -0.6),
+                  initialZoom: 8.2,
+                  minZoom: 8.1,
+                  maxZoom: 18.0,
+                  cameraConstraint: CameraConstraint.contain(
+                    bounds: valenciaBounds,
+                  ),
+                  onPositionChanged: (position, hasGesture) {
+                    if (position.zoom != null) {
+                      setState(() {
+                        currentZoom = position.zoom!;
+                      });
+                    }
+                  },
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://api.mapbox.com/styles/v1/${getMapboxStyle()}/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxAccessToken',
+                    additionalOptions: {'access_token': mapboxAccessToken},
+                    userAgentPackageName: 'com.example.app',
+                  ),
+                  MarkerClusterLayerWidget(
+                    options: MarkerClusterLayerOptions(
+                      maxClusterRadius: 130,
+                      size: const Size(50, 50),
+                      centerMarkerOnClick: true,
+                      markers: markers,
+                      builder: (context, cluster) {
+                        final markerCount = cluster.length;
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color:
+                                markerCount <= 5
+                                    ? Colors.green.withAlpha(180)
+                                    : markerCount <= 15
+                                    ? Colors.orange.withAlpha(180)
+                                    : Colors.red.withAlpha(180),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$markerCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+          Positioned(
+            top: 20,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                if (closestLocation != null) {
+                  mapController.move(closestLocation!, 15.5);
+                }
+              },
+              child: Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(
+                    255,
+                    189,
+                    228,
+                    247,
+                  ).withAlpha((0.85 * 255).round()),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                child: const Icon(
+                  Icons.my_location,
+                  color: Color.fromARGB(
+                    255,
+                    26,
+                    95,
+                    178,
+                  ), // Azul más oscuro para contraste
+                  size: 28,
+                ),
               ),
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.network(
-                    'https://openweathermap.org/img/wn/${weather["icon"]}@2x.png',
-                    width: 35,
-                    height: 35,
-                  ),
-                  Text(
-                    '${weather["temp"]}ºC',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.lightBlue,
-                    ),
-                  ),
-                  Text(
-                    city['name'],
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '${weather["desc"]}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      } else {
-        return const Marker(
-          point: LatLng(0, 0),
-          child: SizedBox.shrink(),
-        );
-      }
-    }).toList();
-
-return Scaffold(
-  body: Stack(
-    children: [
-      isLoading
-  ? Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 120,
-            height: 120,
-            child: Lottie.asset('assets/lottie/load.json'),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Cargando mapa del tiempo...',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
             ),
           ),
         ],
       ),
-    )
-          : FlutterMap(
-              mapController: mapController,
-              options: MapOptions(
-                initialCenter: LatLng(39.5, -0.6),
-                initialZoom: 8.2,
-                minZoom: 8.1,
-                maxZoom: 18.0,
-                cameraConstraint: CameraConstraint.contain(bounds: valenciaBounds),
-                onPositionChanged: (position, hasGesture) {
-                  if (position.zoom != null) {
-                    setState(() {
-                      currentZoom = position.zoom!;
-                    });
-                  }
-                },
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                      'https://api.mapbox.com/styles/v1/${getMapboxStyle()}/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxAccessToken',
-                  additionalOptions: {
-                    'access_token': mapboxAccessToken,
-                  },
-                  userAgentPackageName: 'com.example.app',
-                ),
-                MarkerClusterLayerWidget(
-                  options: MarkerClusterLayerOptions(
-                    maxClusterRadius: 130,
-                    size: const Size(50, 50),
-                    centerMarkerOnClick: true,
-                    markers: markers,
-                    builder: (context, cluster) {
-                      final markerCount = cluster.length;
-                      return Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: markerCount <= 5
-                              ? Colors.green.withAlpha(180)
-                              : markerCount <= 15
-                                  ? Colors.orange.withAlpha(180)
-                                  : Colors.red.withAlpha(180),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '$markerCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-Positioned(
-  top: 20,
-  right: 20,
-  child: GestureDetector(
-    onTap: () {
-      if (closestLocation != null) {
-        mapController.move(closestLocation!, 15.5);
-      }
-    },
-    child: Container(
-      width: 54,
-      height: 54,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 189, 228, 247).withAlpha((0.85 * 255).round()),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.my_location,
-        color: Color.fromARGB(255, 26, 95, 178), // Azul más oscuro para contraste
-        size: 28,
-      ),
-    ),
-  ),
-),
-
-    ],
-  ),
-);
+    );
   }
 
   void showWeatherDialog(
-      String cityName, Map<String, dynamic> data, Color bgColor) {
+    String cityName,
+    Map<String, dynamic> data,
+    Color bgColor,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withAlpha(230),
-                  bgColor.withAlpha(180),
-                ],
+                colors: [Colors.white.withAlpha(230), bgColor.withAlpha(180)],
               ),
               borderRadius: BorderRadius.circular(15),
             ),
