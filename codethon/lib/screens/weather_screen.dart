@@ -134,7 +134,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
   void initState() {
     super.initState();
 
-
     _fetchWeather();
 
     _updateTimer = Timer.periodic(const Duration(minutes: 15), (_) {
@@ -210,6 +209,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
         isNight ? const Color(0xFF1B263B) : const Color(0xFFE6F0FA);
     final Color sombra =
         isNight ? const Color.fromARGB(30, 65, 90, 119) : Colors.black12;
+    final String backgroundImage = isNight ? 'assets/images/maps_card_night.jpg' : 'assets/images/maps_card_night.jpg';
 
     return Scaffold(
       backgroundColor: fondo,
@@ -472,11 +472,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                 decoration: BoxDecoration(
                                   color: card,
                                   borderRadius: BorderRadius.circular(16),
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                      'assets/images/maps_card.jpg',
-                                    ),
-                                    fit: BoxFit.cover,
+                                  image: DecorationImage(
+                                      image: AssetImage(backgroundImage),
+                                      fit: BoxFit.cover,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
@@ -629,7 +627,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
       'partly cloudy': 'Parcialmente nublado',
       'sunny': 'Soleado',
       'clear': 'Despejado',
-      'cloudy' : 'Nublado',
+      'cloudy': 'Nublado',
     };
 
     for (final entrada in traducciones.entries) {

@@ -49,8 +49,8 @@ flutter:
     - assets/lottie/weather/rain-light.json
     - assets/lottie/weather/sunny.json
     - assets/lottie/intro.json
-    - assets/images/maps_card_bg.png
     - assets/images/maps_card.jpg
+    - assets/images/maps_card_night.jpg
 
 flutter_icons:
   android: true
