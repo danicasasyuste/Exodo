@@ -116,7 +116,7 @@ class _MapaVientoScreenState extends State<MapaVientoScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: texto.withOpacity(0.8),
+                      color: texto.withAlpha(204),
                     ),
                   ),
                 ],
