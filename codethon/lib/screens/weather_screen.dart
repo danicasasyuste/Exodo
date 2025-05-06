@@ -28,7 +28,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
   List<Weather>? _hourlyForecast;
   final TextEditingController _searchController = TextEditingController();
   String _selectedCity = '39.4699,-0.3763';
-  bool _showClearIcon = false;
+  //bool _showClearIcon = false;
   Timer? _updateTimer;
   bool _showLoading = true;
 
@@ -134,11 +134,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
   void initState() {
     super.initState();
 
-    _searchController.addListener(() {
-      setState(() {
-        _showClearIcon = _searchController.text.isNotEmpty;
-      });
-    });
 
     _fetchWeather();
 
