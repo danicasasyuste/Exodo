@@ -8,6 +8,9 @@ class Weather {
   final double windSpeed;
   final int pressure;
 
+  final bool willRain;
+  final bool isThunderstorm;
+
   Weather({
     required this.date,
     required this.description,
@@ -17,44 +20,54 @@ class Weather {
     required this.humidity,
     required this.windSpeed,
     required this.pressure,
+    required this.willRain,
+    required this.isThunderstorm,
   });
 
   factory Weather.fromJson(Map<String, dynamic> json) {
+    final current = json['current'];
     return Weather(
       date: DateTime.parse(json['location']['localtime']),
-      description: json['current']['condition']['text'],
-      iconUrl: 'https:${json['current']['condition']['icon']}',
-      temperature: json['current']['temp_c'].toDouble(),
-      feelsLike: json['current']['feelslike_c'].toDouble(),
-      humidity: json['current']['humidity'],
-      windSpeed: json['current']['wind_kph'].toDouble(),
-      pressure: json['current']['pressure_mb'].toInt(),
+      description: current['condition']['text'] ?? '',
+      iconUrl: 'https:${current['condition']['icon'] ?? ''}',
+      temperature: (current['temp_c'] as num?)?.toDouble() ?? 0.0,
+      feelsLike: (current['feelslike_c'] as num?)?.toDouble() ?? 0.0,
+      humidity: current['humidity'] ?? 0,
+      windSpeed: (current['wind_kph'] as num?)?.toDouble() ?? 0.0,
+      pressure: (current['pressure_mb'] as num?)?.toInt() ?? 0,
+      willRain: current['will_it_rain'] == 1,
+      isThunderstorm: (current['chance_of_tstorm'] ?? 0) > 50,
     );
   }
 
   factory Weather.fromJsonHourly(Map<String, dynamic> json) {
     return Weather(
       date: DateTime.parse(json['time']),
-      temperature: json['temp_c'].toDouble(),
-      description: json['condition']['text'],
-      iconUrl: 'https:${json['condition']['icon']}',
-      windSpeed: json['wind_kph'].toDouble(),
-      humidity: json['humidity'],
-      pressure: json['pressure_mb'].toInt(),
-      feelsLike: json['feelslike_c'].toDouble(),
+      description: json['condition']['text'] ?? '',
+      iconUrl: 'https:${json['condition']['icon'] ?? ''}',
+      temperature: (json['temp_c'] as num?)?.toDouble() ?? 0.0,
+      feelsLike: (json['feelslike_c'] as num?)?.toDouble() ?? 0.0,
+      humidity: json['humidity'] ?? 0,
+      windSpeed: (json['wind_kph'] as num?)?.toDouble() ?? 0.0,
+      pressure: (json['pressure_mb'] as num?)?.toInt() ?? 0,
+      willRain: json['will_it_rain'] == 1,
+      isThunderstorm: (json['chance_of_tstorm'] ?? 0) > 50,
     );
   }
 
   factory Weather.fromJsonForecast(Map<String, dynamic> json) {
+    final day = json['day'];
     return Weather(
       date: DateTime.parse(json['date']),
-      description: json['day']['condition']['text'],
-      iconUrl: 'https:${json['day']['condition']['icon']}',
-      temperature: json['day']['avgtemp_c'].toDouble(),
-      feelsLike: json['day']['avgtemp_c'].toDouble(),
-      humidity: json['day']['avghumidity'].toInt(),
-      windSpeed: json['day']['maxwind_kph'].toDouble(),
-      pressure: 0, // No disponible en forecast
+      description: day['condition']['text'] ?? '',
+      iconUrl: 'https:${day['condition']['icon'] ?? ''}',
+      temperature: (day['avgtemp_c'] as num?)?.toDouble() ?? 0.0,
+      feelsLike: (day['avgtemp_c'] as num?)?.toDouble() ?? 0.0,
+      humidity: day['avghumidity'] ?? 0,
+      windSpeed: (day['maxwind_kph'] as num?)?.toDouble() ?? 0.0,
+      pressure: 0, // aún no disponible en el forecast
+      willRain: day['daily_will_it_rain'] == 1,
+      isThunderstorm: (day['daily_chance_of_tstorm'] ?? 0) > 50,
     );
   }
 }

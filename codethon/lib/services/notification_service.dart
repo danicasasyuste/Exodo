@@ -42,7 +42,7 @@ class NotificationService {
       payload: '$municipio|$tipo|',
     );
   }
-
+  
   static Future<void> notificarCambioEstado(String mensaje) async {
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'estado_id', 'Cambio Estado',
@@ -53,6 +53,27 @@ class NotificationService {
       'Actualización del clima',
       mensaje,
       const NotificationDetails(android: androidDetails),
-    );
+    ); 
   }
+static Future<void> notificarClimaEvento(String eventoId, String municipio, String mensaje) async {
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'clima_evento',
+    'Eventos Climáticos',
+    importance: Importance.max,
+    actions: <AndroidNotificationAction>[
+      AndroidNotificationAction('yes', 'Sí', showsUserInterface: false, cancelNotification: true),
+      AndroidNotificationAction('no', 'No', showsUserInterface: false, cancelNotification: true),
+    ],
+  );
+
+  final NotificationDetails details = NotificationDetails(android: androidDetails);
+
+  await _plugin.show(
+    2,
+    'Advertencia Climática',
+    mensaje,
+    details,
+    payload: '$municipio|evento_$eventoId|',
+  );
+}
 }

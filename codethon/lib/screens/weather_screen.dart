@@ -8,8 +8,11 @@ import '../models/weather.dart';
 import '../models/weather_override.dart';
 import '../services/response_analysis_service.dart';
 import '../services/notification_service.dart';
-
-import '../screens/map_screen.dart';
+import 'calendar_screen.dart';
+import 'map_screen.dart';
+import '../widgets/global_btn_status.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'encuesta_clima_screen.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -37,6 +40,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
   //bool _showClearIcon = false;
   Timer? _updateTimer;
   bool _showLoading = true;
+  int _pageIndex = 0;
+  final PageController _pageController = PageController();
+  Map<String, int> _conteoClima = {};
+  String? _climaColaborativo;
 
   void _showHourlyPopup(BuildContext context) {
     if (_hourlyForecast == null || _hourlyForecast!.isEmpty) return;
@@ -123,17 +130,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   final List<MunicipioValenciano> municipiosValencianos = [
     MunicipioValenciano(nombre: 'Valencia', query: '39.4699,-0.3763'),
-    MunicipioValenciano(nombre: 'Torrent', query: '39.4375,-0.4647'),
+    MunicipioValenciano(nombre: 'Manises', query: '39.4889,-0.4632'),
     MunicipioValenciano(nombre: 'Gandía', query: '38.9681,-0.1830'),
-    MunicipioValenciano(nombre: 'Paterna', query: '39.5021,-0.4408'),
+    MunicipioValenciano(nombre: 'Ontinyent', query: '38.8167,-0.6000'),
     MunicipioValenciano(nombre: 'Sagunto', query: '39.6796,-0.2784'),
     MunicipioValenciano(nombre: 'Xirivella', query: '39.4667,-0.4333'),
     MunicipioValenciano(nombre: 'Alzira', query: '39.1506,-0.4356'),
-    MunicipioValenciano(nombre: 'Ontinyent', query: '38.8167,-0.6000'),
     MunicipioValenciano(nombre: 'Mislata', query: '39.4766,-0.4162'),
-    MunicipioValenciano(nombre: 'Manises', query: '39.4889,-0.4632'),
     MunicipioValenciano(nombre: 'Cullera', query: '39.1667,-0.25'),
-    MunicipioValenciano(nombre: 'Burjassot', query: '39.50952,-0.41346'),
   ];
 
   @override
@@ -141,9 +145,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
     super.initState();
 
     _fetchWeather();
+    _fetchColaborativo();
 
     _updateTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       _fetchWeather();
+      _fetchColaborativo();
     });
     _verificacionTimer = Timer.periodic(const Duration(minutes: 10), (_) {
       _evaluarRespuestas();
@@ -155,6 +161,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
     _updateTimer?.cancel();
     _verificacionTimer?.cancel();
     _searchController.dispose();
+    GlobalConfig.mostrarBotonAsistente.value = false;
     super.dispose();
   }
 
@@ -171,19 +178,61 @@ class _WeatherScreenState extends State<WeatherScreen> {
         _forecast = forecast;
         _hourlyForecast = hourly;
       });
+
+      // Acceso seguro a .description
+      if ((_currentWeather?.description ?? '').toLowerCase().contains('rain')) {
+        NotificationService.mostrarPregunta(
+          _selectedCity,
+          'lluvia',
+          '¿Sigue lloviendo en tu zona?',
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al cargar los datos: $e')));
     }
-    if (_currentWeather!.description.toLowerCase().contains('rain')) {
+
+    // Verifica si hay lluvia solo si _currentWeather no es null
+    if ((_currentWeather?.description ?? '').toLowerCase().contains('rain')) {
       NotificationService.mostrarPregunta(
         _selectedCity,
         'lluvia',
         '¿Sigue lloviendo en tu zona?',
       );
     }
+  }
+
+  Future<void> _fetchColaborativo() async {
+    final now = DateTime.now();
+    final limite = now.subtract(const Duration(minutes: 20));
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('reportes_clima')
+            .where('query', isEqualTo: _selectedCity)
+            .where('timestamp', isGreaterThan: Timestamp.fromDate(limite))
+            .get();
+
+    final conteo = <String, int>{};
+    for (final doc in snapshot.docs) {
+      final clima = doc['clima'] as String;
+      conteo[clima] = (conteo[clima] ?? 0) + 1;
+    }
+
+    String? masVotado;
+    int maxVotos = 0;
+    conteo.forEach((clima, votos) {
+      if (votos > maxVotos) {
+        maxVotos = votos;
+        masVotado = clima;
+      }
+    });
+
+    setState(() {
+      _conteoClima = conteo;
+      _climaColaborativo = masVotado;
+    });
   }
 
   Future<void> _evaluarRespuestas() async {
@@ -247,330 +296,418 @@ class _WeatherScreenState extends State<WeatherScreen> {
     final String backgroundImage =
         isNight
             ? 'assets/images/maps_card_night.jpg'
-            : 'assets/images/maps_card_night.jpg';
+            : 'assets/images/maps_card.jpg';
 
     return Scaffold(
       backgroundColor: fondo,
-      body: SafeArea(
-        child:
-            _showLoading || _currentWeather == null
-                ? Center(
-                  child: Lottie.asset(
-                    'assets/lottie/intro.json',
-                    width: 180,
-                    onLoaded: (composition) {
-                      Future.delayed(composition.duration, () {
-                        _fetchWeather();
-                        setState(() {
-                          _showLoading = false;
-                        });
-                      });
-                    },
-                  ),
-                )
-                : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.location_on, color: icono, size: 37),
-                                const SizedBox(width: 8),
-                                DropdownButtonHideUnderline(
-                                  child: DropdownButton2<MunicipioValenciano>(
-                                    isExpanded: true,
-                                    customButton: SizedBox(
-                                      width: 150, // o el ancho que tú prefieras
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              municipiosValencianos
-                                                  .firstWhere(
-                                                    (m) =>
-                                                        m.query ==
-                                                        _selectedCity,
-                                                    orElse:
-                                                        () =>
-                                                            municipiosValencianos[0],
-                                                  )
-                                                  .nombre,
-                                              style: TextStyle(
-                                                color: texto,
-                                                fontSize: 23,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.arrow_drop_down,
-                                            color: icono,
-                                            size: 32,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (i) => setState(() => _pageIndex = i),
+        children: [
 
-                                    dropdownStyleData: DropdownStyleData(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: dropDown,
-                                      ),
-                                      offset: const Offset(0, -8),
-                                      maxHeight: kMinInteractiveDimension * 5,
+          
+          SafeArea(
+            child:
+                _showLoading || _currentWeather == null
+                    ? Center(
+                      child: Lottie.asset(
+                        'assets/lottie/intro.json',
+                        width: 180,
+                        onLoaded: (composition) {
+                          Future.delayed(composition.duration, () {
+                            _fetchWeather();
+                            setState(() {
+                              _showLoading = false;
+                            });
+                          });
+                        },
+                      ),
+                    )
+                    : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      color: icono,
+                                      size: 37,
                                     ),
-                                    value: municipiosValencianos.firstWhere(
-                                      (m) => m.query == _selectedCity,
-                                      orElse: () => municipiosValencianos[0],
-                                    ),
-                                    items:
-                                        municipiosValencianos.map((m) {
-                                          return DropdownMenuItem(
-                                            value: m,
-                                            child: Text(
-                                              m.nombre,
-                                              style: TextStyle(color: texto),
+                                    const SizedBox(width: 8),
+                                    DropdownButtonHideUnderline(
+                                      child: DropdownButton2<
+                                        MunicipioValenciano
+                                      >(
+                                        isExpanded: true,
+                                        customButton: SizedBox(
+                                          width:
+                                              150, // o el ancho que tú prefieras
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  municipiosValencianos
+                                                      .firstWhere(
+                                                        (m) =>
+                                                            m.query ==
+                                                            _selectedCity,
+                                                        orElse:
+                                                            () =>
+                                                                municipiosValencianos[0],
+                                                      )
+                                                      .nombre,
+                                                  style: TextStyle(
+                                                    color: texto,
+                                                    fontSize: 23,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons.arrow_drop_down,
+                                                color: icono,
+                                                size: 32,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        dropdownStyleData: DropdownStyleData(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
-                                          );
-                                        }).toList(),
-                                    onChanged: (MunicipioValenciano? newValue) {
-                                      if (newValue != null) {
-                                        setState(() {
-                                          _selectedCity = newValue.query;
-                                        });
-                                        _fetchWeather();
-                                      }
-                                    },
+                                            color: dropDown,
+                                          ),
+                                          offset: const Offset(0, -8),
+                                          maxHeight:
+                                              kMinInteractiveDimension * 5,
+                                        ),
+                                        value: municipiosValencianos.firstWhere(
+                                          (m) => m.query == _selectedCity,
+                                          orElse:
+                                              () => municipiosValencianos[0],
+                                        ),
+                                        items:
+                                            municipiosValencianos.map((m) {
+                                              return DropdownMenuItem(
+                                                value: m,
+                                                child: Text(
+                                                  m.nombre,
+                                                  style: TextStyle(
+                                                    color: texto,
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                        onChanged: (
+                                          MunicipioValenciano? newValue,
+                                        ) {
+                                          if (newValue != null) {
+                                            setState(() {
+                                              _selectedCity = newValue.query;
+                                            });
+                                            _fetchWeather();
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+  children: [
+    IconButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CalendarScreen()),
+        );
+      },
+      icon: Icon(Icons.calendar_today, color: icono, size: 28),
+    ),
+    const SizedBox(width: 8),
+    IconButton(
+  onPressed: () {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // se puede cerrar tocando fuera
+      barrierColor: Colors.black54, // fondo más oscuro
+      builder: (context) => const EncuestaClimaPopup(),
+    );
+  },
+  icon: Icon(Icons.how_to_vote, color: icono, size: 28),
+),
+
+  ],
+),
+
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: Lottie.asset(
+                                getLottieAsset(_currentWeather!.description),
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  municipiosValencianos.firstWhere((m) => m.query == _selectedCity, orElse: () => municipiosValencianos[0]).nombre,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: texto.withAlpha(230),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                GestureDetector(
+                                  onTap: () => _showHourlyPopup(context),
+                                  child: Text(
+                                    '${_currentWeather!.temperature}°C',
+                                    style: TextStyle(
+                                      fontSize: 60,
+                                      fontWeight: FontWeight.bold,
+                                      color: texto,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _override.overrideActiva && !_override.lluvia
+                                      ? 'Sin lluvia (verificado)'
+                                      : _translateDescription(
+                                        _currentWeather!.description,
+                                      ),
+
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: texto.withAlpha(230),
                                   ),
                                 ),
                               ],
                             ),
-                            Icon(Icons.calendar_today, color: icono, size: 28),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 120,
-                        child: Center(
-                          child: Lottie.asset(
-                            getLottieAsset(_currentWeather!.description),
-                            fit: BoxFit.contain,
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              '${municipiosValencianos.firstWhere((m) => m.query == _selectedCity, orElse: () => municipiosValencianos[0]).nombre} tiene',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: texto.withAlpha(230),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            GestureDetector(
-                              onTap: () => _showHourlyPopup(context),
-                              child: Text(
-                                '${_currentWeather!.temperature}°C',
-                                style: TextStyle(
-                                  fontSize: 60,
-                                  fontWeight: FontWeight.bold,
-                                  color: texto,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _override.overrideActiva && !_override.lluvia
-                                  ? 'Sin lluvia (verificado)'
-                                  : _translateDescription(
-                                    _currentWeather!.description,
-                                  ),
-
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: texto.withAlpha(230),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _infoCard(
-                            Icons.water_drop,
-                            'Humedad',
-                            '${_currentWeather!.humidity}%',
-                            card,
-                            texto,
-                          ),
-                          _infoCard(
-                            Icons.air,
-                            'Viento',
-                            '${_currentWeather!.windSpeed} km/h',
-                            card,
-                            texto,
-                          ),
-                          _infoCard(
-                            Icons.speed,
-                            'Presión',
-                            '${_currentWeather!.pressure} hPa',
-                            card,
-                            texto,
-                          ),
-                          _infoCard(
-                            Icons.thermostat,
-                            'Sensación',
-                            '${_currentWeather!.feelsLike}°C',
-                            card,
-                            texto,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      _forecast == null
-                          ? const CircularProgressIndicator()
-                          : Column(
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: card,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: sombra,
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 8,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children:
-                                      _forecast!.take(4).map((day) {
-                                        return Column(
-                                          children: [
-                                            Text(
-                                              DateFormat.E('es_ES')
-                                                  .format(day.date)
-                                                  .substring(0, 3)
-                                                  .replaceFirstMapped(
-                                                    RegExp(r'^[a-zA-Z]'),
-                                                    (m) => m[0]!.toUpperCase(),
-                                                  ),
-                                              style: TextStyle(
-                                                color: texto,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Image.network(
-                                              day.iconUrl,
-                                              width: 32,
-                                              height: 32,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              '${day.temperature}°C',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: texto,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
-                                ),
+                              _infoCard(
+                                Icons.water_drop,
+                                'Humedad',
+                                '${_currentWeather?.humidity ?? 0}%',
+                                card,
+                                texto,
                               ),
-                              const SizedBox(height: 16),
-                              Container(
-                                height: 112,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: card,
-                                  borderRadius: BorderRadius.circular(16),
-                                  image: DecorationImage(
-                                    image: AssetImage(backgroundImage),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: sombra,
-                                      blurRadius: 8,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(16),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const MapsScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Icon(
-                                            Icons.map,
-                                            color: icono,
-                                            size: 28,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Mapas',
-                                            style: TextStyle(
-                                              color: texto,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                              _infoCard(
+                                Icons.air,
+                                'Viento',
+                                '${_currentWeather?.windSpeed ?? 0} km/h',
+                                card,
+                                texto,
+                              ),
+                              _infoCard(
+                                Icons.speed,
+                                'Presión',
+                                '${_currentWeather?.pressure ?? 0} hPa',
+                                card,
+                                texto,
+                              ),
+                              _infoCard(
+                                Icons.thermostat,
+                                'Sensación',
+                                (_currentWeather?.feelsLike ?? 0)
+                                    .toStringAsFixed(1),
+                                card,
+                                texto,
                               ),
                             ],
                           ),
-                    ],
-                  ),
-                ),
+                          const SizedBox(height: 24),
+                          _forecast == null
+                              ? const CircularProgressIndicator()
+                              : Column(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: card,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: sombra,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children:
+                                          _forecast!.take(4).map((day) {
+                                            return Column(
+                                              children: [
+                                                Text(
+                                                  DateFormat.E('es_ES')
+                                                      .format(day.date)
+                                                      .substring(0, 3)
+                                                      .replaceFirstMapped(
+                                                        RegExp(r'^[a-zA-Z]'),
+                                                        (m) =>
+                                                            m[0]!.toUpperCase(),
+                                                      ),
+                                                  style: TextStyle(
+                                                    color: texto,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Image.network(
+                                                  day.iconUrl,
+                                                  width: 32,
+                                                  height: 32,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  '${day.temperature}°C',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                    color: texto,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          }).toList(),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    height: 112,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: card,
+                                      borderRadius: BorderRadius.circular(16),
+                                      image: DecorationImage(
+                                        image: AssetImage(backgroundImage),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: sombra,
+                                          blurRadius: 8,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(16),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => const MapsScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Icon(
+                                                Icons.map,
+                                                color: icono,
+                                                size: 28,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(
+                                                'Mapas',
+                                                style: TextStyle(
+                                                  color: texto,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        ],
+                      ),
+                    ),
+          ),
+          _buildVistaColaborativa(context),
+        ],
       ),
+    
+    );
+    
+  }
+
+  Widget _buildVistaColaborativa(BuildContext context) {
+    final bool isNight = DateTime.now().hour >= 20 || DateTime.now().hour < 6;
+    final Color texto = isNight ? Colors.white70 : Colors.black87;
+
+    return Center(
+      child:
+          _climaColaborativo == null
+              ? const CircularProgressIndicator()
+              : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.people_alt, size: 60, color: texto),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Clima colaborativo actual:',
+                    style: TextStyle(color: texto, fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _climaColaborativo!,
+                    style: TextStyle(
+                      color: texto,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 
@@ -664,7 +801,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
       'scattered thunderstorms': 'Tormentas dispersas',
       'thundery outbreaks possible': 'Posibles brotes tormentosos',
       'thundery outbreaks in nearby': 'Posibles brotes tormentosos cerca',
-      'patchy rain nearby': 'Lluvias intermitentes en las cercanías',
+      'patchy rain nearby': 'Lluvias intermitentes',
       'partly cloudy': 'Parcialmente nublado',
       'sunny': 'Soleado',
       'clear': 'Despejado',

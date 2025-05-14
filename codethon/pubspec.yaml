@@ -9,10 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: 12.0.4
+  flutter_local_notifications:
+    git:
+      url: https://github.com/MaikuB/flutter_local_notifications.git 
+      path: flutter_local_notifications
   http: ^1.2.1
   intl: ^0.19.0
   firebase_core: ^2.25.4
+  firebase_auth: ^4.17.4
   cloud_firestore: ^4.12.2
   cupertino_icons: ^1.0.8
   logger: ^2.0.2
@@ -26,7 +30,12 @@ dependencies:
   webview_flutter: ^4.4.2
   flutter_launcher_icons: ^0.13.1
   dropdown_button2: ^2.3.9
-
+  table_calendar: ^3.0.9
+  shared_preferences: ^2.2.2
+  dropdown_search: ^5.0.6
+  google_sign_in: ^6.3.0
+  crypto: ^3.0.3
+  flutter_webrtc: 0.9.46
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -40,6 +49,7 @@ flutter:
     - assets/lottie/radar.json
     - assets/lottie/load.json
     - assets/lottie/load2.json
+    - assets/lottie/asistente.json
     - assets/lottie/load3.json
     - assets/lottie/weather/cloudy.json
     - assets/lottie/weather/fog.json
@@ -50,11 +60,18 @@ flutter:
     - assets/lottie/weather/rain-light.json
     - assets/lottie/weather/sunny.json
     - assets/lottie/intro.json
+    - assets/lottie/day-night.json
+    - assets/lottie/background-cycle.json
     - assets/images/maps_card.jpg
     - assets/images/maps_card_night.jpg
+    - assets/images/google.png
+
+
 
 flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon/app_icon.png"
 
+dependency_overrides:
+  web: ^0.5.1

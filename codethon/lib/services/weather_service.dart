@@ -5,7 +5,7 @@ import '../models/weather.dart';
 
 class WeatherService {
   final String _apiKey = 'ab5ff60e7788472badf195210253003';
-  final String _baseUrl = 'http://api.weatherapi.com/v1';
+  final String _baseUrl = 'https://api.weatherapi.com/v1';
   final Logger _logger = Logger();
 
   /// Clima actual
