@@ -34,7 +34,7 @@ ClimaColab es una aplicación móvil desarrollada con Flutter que combina datos 
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com//ClimaColab.git
+git clone https:/github.com/danicasasyuste/Exodo.git
 cd ClimaColab
 flutter pub get
 flutter run
