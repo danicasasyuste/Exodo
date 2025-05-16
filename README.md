@@ -1,7 +1,7 @@
 # 🌦️ ClimaColab: App Meteorológica Colaborativa
 ![ClimaColab](ClimaColab.jpg)
 
-ClimaColab es una aplicación móvil desarrollada con Flutter que combina datos oficiales del clima con reportes ciudadanos en tiempo real para mejorar la precisión meteorológica local en la Comunidad Valenciana. Esta app forma parte de un Trabajo de Fin de Grado.
+ClimaColab es una aplicación móvil desarrollada con Flutter que combina datos oficiales del clima con reportes ciudadanos en tiempo real para mejorar la precisión meteorológica local en la Comunidad Valenciana.
 
 ## 🎬 Vídeo de Demostración
 
