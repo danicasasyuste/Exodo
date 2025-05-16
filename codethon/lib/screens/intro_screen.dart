@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../screens/login_register/auth_screen.dart';
+import 'weather_screen.dart';
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
 
@@ -26,7 +26,7 @@ class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const AuthPage()),
+          MaterialPageRoute(builder: (_) => const WeatherScreen()),
         );
       }
     });
