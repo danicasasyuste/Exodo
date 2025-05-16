@@ -5,7 +5,7 @@ ClimaColab es una aplicación móvil desarrollada con Flutter que combina datos 
 ## 🎬 Vídeo de Demostración
 
 📺 Mira el funcionamiento de la app aquí:  
-👉 [Ver en YouTube](https://www.youtube.com/watch?v=TU_ENLACE_AQUI)
+👉 [Ver en YouTube](https://www.youtube.com/watch?v=(https://youtu.be/fSdDE5TKrpQ))
 
 ## 📱 Funcionalidades principales
 
@@ -31,18 +31,10 @@ ClimaColab es una aplicación móvil desarrollada con Flutter que combina datos 
 - Notificaciones programadas
 - PageView, Dropdowns, Carousels, y diseño responsive.
 
-## 📸 Capturas
-
-| Pantalla principal | Encuesta ciudadana | Mapa del tiempo |
-|--------------------|--------------------|-----------------|
-| ![Pantalla](assets/screens/main.png) | ![Encuesta](assets/screens/encuesta.png) | ![Mapa](assets/screens/mapa.png) |
-
-> 📍 Las imágenes son ejemplos. Sustitúyelas por tus capturas reales en la carpeta `assets/screens/`.
-
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com/tuusuario/ClimaColab.git
+git clone https://github.com//ClimaColab.git
 cd ClimaColab
 flutter pub get
 flutter run
