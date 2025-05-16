@@ -32,7 +32,6 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-codethon/assets/firebase_service_account.json
 
 # Symbolication related
 app.*.symbols
