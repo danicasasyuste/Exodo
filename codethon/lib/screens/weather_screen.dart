@@ -44,6 +44,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
   final Map<String, int> _conteoClima = {};
   String? _climaColaborativo;
   int _climaPageIndex = 0;
+  int votosTotal = 0;
+  Map<String, int> votosPorClima = {};
+  String? climaMasVotado;
 
   void _showHourlyPopup(BuildContext context) {
     if (_hourlyForecast == null || _hourlyForecast!.isEmpty) return;
@@ -173,6 +176,37 @@ class _WeatherScreenState extends State<WeatherScreen> {
     super.dispose();
   }
 
+  Future<void> _fetchColaborativo() async {
+    final now = DateTime.now();
+    final limite = now.subtract(const Duration(minutes: 15));
+
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('reportes_clima')
+            .where('query', isEqualTo: _selectedCity.trim())
+            .where('timestamp', isGreaterThan: Timestamp.fromDate(limite))
+            .get();
+
+    final conteo = <String, int>{};
+    for (final doc in snapshot.docs) {
+      final clima = doc['clima'] as String;
+      conteo[clima] = (conteo[clima] ?? 0) + 1;
+    }
+    debugPrint('Consultando Firebase para $_selectedCity');
+    debugPrint('Documentos encontrados: ${snapshot.docs.length}');
+    for (final doc in snapshot.docs) {
+      debugPrint('→ Clima: ${doc['clima']} | Query: ${doc['query']}');
+    }
+
+    _conteoClima
+      ..clear()
+      ..addAll(conteo);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Future<void> _fetchWeather() async {
     try {
       final weather = await _weatherService.getWeather(_selectedCity);
@@ -196,51 +230,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error al cargar los datos: $e')));
-    }
-  }
-
-  Future<void> _fetchColaborativo() async {
-    try {
-      final now = DateTime.now();
-      final limite = now.subtract(const Duration(minutes: 15));
-
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection('reportes_clima')
-              .where('query', isEqualTo: _selectedCity.trim())
-              .where('timestamp', isGreaterThan: Timestamp.fromDate(limite))
-              .get();
-
-      final conteo = <String, int>{};
-      for (final doc in snapshot.docs) {
-        final clima = doc['clima'] as String;
-        conteo[clima] = (conteo[clima] ?? 0) + 1;
-      }
-
-      String? masVotado;
-      int maxVotos = 0;
-      conteo.forEach((clima, votos) {
-        if (votos > maxVotos) {
-          maxVotos = votos;
-          masVotado = clima;
-        }
-      });
-
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-  if (mounted) {
-    setState(() {
-      _showLoading = false;
-    });
-  }
-});
-
-    } catch (e) {
-      print('❌ Error al cargar clima colaborativo: $e');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al obtener votos colaborativos')),
-      );
     }
   }
 
@@ -309,8 +298,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     await _fetchColaborativo();
                   },
                   child: SingleChildScrollView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,6 +440,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                             (context) =>
                                                 const EncuestaClimaPopup(),
                                       );
+                                      _fetchColaborativo();
                                     },
                                   ),
                                 ],
