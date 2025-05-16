@@ -168,7 +168,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
     _updateTimer?.cancel();
     _verificacionTimer?.cancel();
     _searchController.dispose();
-
     GlobalConfig.mostrarBotonAsistente.value = true;
 
     super.dispose();
@@ -311,20 +310,19 @@ class _WeatherScreenState extends State<WeatherScreen> {
                   },
                   child: SingleChildScrollView(
                     physics:
-                        const AlwaysScrollableScrollPhysics(), // 👈 Importante
-                    padding: const EdgeInsets.all(16),
+                        const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                            horizontal: 12,
+                            vertical: 8,
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // IZQUIERDA: ubicación + selector
                               Expanded(
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -334,7 +332,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                       color: icono,
                                       size: 30,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 4),
                                     Expanded(
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton2<
