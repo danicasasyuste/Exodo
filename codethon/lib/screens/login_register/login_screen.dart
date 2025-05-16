@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
         return AlertDialog(
           backgroundColor: Colors.deepOrange,
           title: Center(
-            child: Text(message, style: TextStyle(color: Colors.white)),
+            child: Text(message, style: const TextStyle(color: Colors.white)),
           ),
         );
       },
@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           SizedBox.expand(
             child: Lottie.asset(
-              'assets/lottie/background-cycle.json',
+              'assets/lottie/night-time.json',
               fit: BoxFit.cover,
               repeat: true,
             ),
@@ -116,20 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: screenHeight * 0.05),
-
-                    SizedBox(
-                      height: 165,
-                      child: Center(
-                        child: Lottie.asset(
-                          'assets/lottie/day-night.json',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: screenHeight * 0.03),
-
+                    SizedBox(height: screenHeight * 0.25),
                     Text(
                       'Bienvenido, te hemos extrañado!',
                       style: TextStyle(
@@ -166,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => PasswordRecoveryPage(),
+                                  builder: (context) => const PasswordRecoveryPage(),
                                 ),
                               );
                             },
@@ -192,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Row(
                         children: [
-                          Expanded(
+                          const Expanded(
                             child: Divider(
                               thickness: 0.5,
                               color: Colors.white70,
@@ -229,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                           onTap: () {
                             GoogleSignInProvider.signInWithGoogle();
                           },
-                          child: SizedBox(
+                          child: const SizedBox(
                             width: 50,
                             height: 50,
                             child: SquareTile(

@@ -6,7 +6,7 @@ class NotificationService {
 
   static Future<void> init() async {
     const AndroidInitializationSettings androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initSettings = InitializationSettings(android: androidInit);
+    const InitializationSettings initSettings = InitializationSettings(android: androidInit);
     await _plugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (response) {
@@ -24,37 +24,7 @@ class NotificationService {
     );
   }
 
-  static Future<void> mostrarPregunta(String municipio, String tipo, String texto) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'pregunta_id', 'Preguntas Clima',
-      importance: Importance.max,
-      actions: <AndroidNotificationAction>[
-        AndroidNotificationAction('yes', 'Sí', showsUserInterface: false, cancelNotification: true),
-        AndroidNotificationAction('no', 'No', showsUserInterface: false, cancelNotification: true),
-      ],
-    );
-    const NotificationDetails details = NotificationDetails(android: androidDetails);
-    await _plugin.show(
-      0,
-      texto,
-      'Toca para responder',
-      details,
-      payload: '$municipio|$tipo|',
-    );
-  }
-  
-  static Future<void> notificarCambioEstado(String mensaje) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'estado_id', 'Cambio Estado',
-      importance: Importance.high,
-    );
-    await _plugin.show(
-      1,
-      'Actualización del clima',
-      mensaje,
-      const NotificationDetails(android: androidDetails),
-    ); 
-  }
+
 static Future<void> notificarClimaEvento(String eventoId, String municipio, String mensaje) async {
   const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
     'clima_evento',
@@ -63,17 +33,7 @@ static Future<void> notificarClimaEvento(String eventoId, String municipio, Stri
     actions: <AndroidNotificationAction>[
       AndroidNotificationAction('yes', 'Sí', showsUserInterface: false, cancelNotification: true),
       AndroidNotificationAction('no', 'No', showsUserInterface: false, cancelNotification: true),
-    ],
-  );
-
-  final NotificationDetails details = NotificationDetails(android: androidDetails);
-
-  await _plugin.show(
-    2,
-    'Advertencia Climática',
-    mensaje,
-    details,
-    payload: '$municipio|evento_$eventoId|',
-  );
-}
+      ],
+    );
+  }
 }

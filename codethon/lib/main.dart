@@ -6,13 +6,20 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  OneSignal.initialize('76df6edf-f7b8-4c71-9c70-7f25a558f2f9');
+
+  OneSignal.Notifications.requestPermission(true);
+
   await NotificationService.init();
+
   await initializeDateFormatting('es_ES', null);
 
   runApp(const WeatherApp());

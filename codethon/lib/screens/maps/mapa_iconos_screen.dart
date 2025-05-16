@@ -137,7 +137,7 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
       ].firstWhere((c) => c['name'] == name, orElse: () => {});
       if (city.isNotEmpty) {
         final LatLng pos = LatLng(city['lat'], city['lon']);
-        final double dist = Distance().as(
+        final double dist = const Distance().as(
           LengthUnit.Kilometer,
           userLocation!,
           pos,
@@ -155,8 +155,8 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
   }
 
   final LatLngBounds valenciaBounds = LatLngBounds(
-    LatLng(37.8, -1.5),
-    LatLng(40.9, 0.9),
+    const LatLng(37.8, -1.5),
+    const LatLng(40.9, 0.9),
   );
 
   @override
@@ -354,7 +354,7 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
               : FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
-                  initialCenter: LatLng(39.5, -0.6),
+                  initialCenter: const LatLng(39.5, -0.6),
                   initialZoom: 8.2,
                   minZoom: 8.1,
                   maxZoom: 18.0,
@@ -428,11 +428,11 @@ class _WeatherIconMapState extends State<WeatherIconMap> {
                     247,
                   ).withAlpha((0.85 * 255).round()),
                   shape: BoxShape.circle,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),

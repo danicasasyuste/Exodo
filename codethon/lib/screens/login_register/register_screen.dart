@@ -78,7 +78,7 @@ class _RegisterPageState extends State<RegisterPage> {
         children: [
           SizedBox.expand(
             child: Lottie.asset(
-              'assets/lottie/background-cycle.json',
+              'assets/lottie/day-time.json',
               fit: BoxFit.cover,
               repeat: true,
             ),
@@ -89,18 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: screenHeight * 0.05),
-
-                    SizedBox(
-                      height: 165,
-                      child: Center(
-                        child: Lottie.asset(
-                          'assets/lottie/day-night.json',
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-
+                    SizedBox(height: screenHeight * 0.25),
                     // Welcome back
                     Text(
                       'Bienvenido, te estamos esperando!',
@@ -192,7 +181,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           onTap: () {
                             GoogleSignInProvider.signInWithGoogle();
                           },
-                          child: SizedBox(
+                          child: const SizedBox(
                             width: 50,
                             height: 50,
                             child: SquareTile(

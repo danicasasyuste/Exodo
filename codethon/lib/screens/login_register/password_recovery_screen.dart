@@ -50,7 +50,7 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recuperar Contraseña'),
+        title: const Text('Recuperar Contraseña'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -61,17 +61,17 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               // Título
-              Text(
+              const Text(
                 'Ingrese su correo electrónico para recuperar la contraseña',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Campo de texto para el correo electrónico
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Correo electrónico',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
@@ -87,16 +87,16 @@ class _PasswordRecoveryPageState extends State<PasswordRecoveryPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Botón para recuperar la contraseña
               ElevatedButton(
                 onPressed: _recoverPassword,
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                child: Text('Recuperar contraseña'),
+                child: const Text('Recuperar contraseña'),
               ),
 
               // Mostrar mensaje de éxito o error

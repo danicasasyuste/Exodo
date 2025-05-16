@@ -206,8 +206,8 @@ class _MapaLluviaScreenState extends State<MapaLluviaScreen> {
                       ),
                       cameraConstraint: CameraConstraint.contain(
                         bounds: LatLngBounds(
-                          LatLng(37.0, -3.0),
-                          LatLng(42.0, 1.5),
+                          const LatLng(37.0, -3.0),
+                          const LatLng(42.0, 1.5),
                         ),
                       ),
                     ),

@@ -1,1 +1,69 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"codethon-53527","appId":"1:51124256983:android:a572db9d0099c40ec47092","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"codethon-53527","configurations":{"android":"1:51124256983:android:a572db9d0099c40ec47092","ios":"1:51124256983:ios:7f198ac99c2affd5c47092","macos":"1:51124256983:ios:7f198ac99c2affd5c47092","web":"1:51124256983:web:fdad8360d732444bc47092","windows":"1:51124256983:web:eb90c70c46aed344c47092"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "codethon-53527",
+          "appId": "1:51124256983:android:a572db9d0099c40ec47092",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "codethon-53527",
+          "configurations": {
+            "android": "1:51124256983:android:a572db9d0099c40ec47092",
+            "ios": "1:51124256983:ios:7f198ac99c2affd5c47092",
+            "macos": "1:51124256983:ios:7f198ac99c2affd5c47092",
+            "web": "1:51124256983:web:fdad8360d732444bc47092",
+            "windows": "1:51124256983:web:eb90c70c46aed344c47092"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "cd functions && npm install"
+      ]
+    },
+    {
+      "source": "codethon",
+      "codebase": "codethon",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    },
+    {
+      "source": "funtions",
+      "codebase": "coding",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

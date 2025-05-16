@@ -405,7 +405,7 @@ void _saveEvents() async {
                     Navigator.pop(context);
                   }
                 },
-                child: Text('Agregar', style: TextStyle(color: const Color.fromARGB(255, 116, 162, 241))),
+                child: const Text('Agregar', style: TextStyle(color: Color.fromARGB(255, 116, 162, 241))),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),

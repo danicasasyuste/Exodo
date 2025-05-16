@@ -1,6 +1,6 @@
 name: codethon
 description: "A new Flutter project."
-publish_to: 'none' 
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -20,7 +20,7 @@ dependencies:
   cloud_firestore: ^4.12.2
   cupertino_icons: ^1.0.8
   logger: ^2.0.2
-  flutter_map_marker_cluster: ^1.1.1 
+  flutter_map_marker_cluster: ^1.1.1
   lottie: ^2.6.0
   geolocator: ^11.0.0
   geocoding: ^2.2.0
@@ -36,14 +36,20 @@ dependencies:
   google_sign_in: ^6.3.0
   crypto: ^3.0.3
   flutter_webrtc: 0.9.46
+  firebase_messaging: ^14.7.4
+  googleapis_auth: ^1.4.0
+  url_launcher: ^6.2.5
+  onesignal_flutter: ^5.0.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
   assets:
+    - assets/firebase_service_account.json
     - assets/lottie/rain.json
     - assets/lottie/wind.json
     - assets/lottie/radar.json
@@ -60,13 +66,18 @@ flutter:
     - assets/lottie/weather/rain-light.json
     - assets/lottie/weather/sunny.json
     - assets/lottie/intro.json
-    - assets/lottie/day-night.json
-    - assets/lottie/background-cycle.json
+    - assets/lottie/alerta.json
+    - assets/lottie/apagon.json
+    - assets/lottie/incendio.json
+    - assets/lottie/inundacion.json
+    - assets/lottie/load-votaciones.json
+    - assets/lottie/night-time.json
+    - assets/lottie/day-time.json
+    - assets/lottie/terremoto.json
+    - assets/lottie/tornado.json
     - assets/images/maps_card.jpg
     - assets/images/maps_card_night.jpg
     - assets/images/google.png
-
-
 
 flutter_icons:
   android: true
@@ -75,3 +86,5 @@ flutter_icons:
 
 dependency_overrides:
   web: ^0.5.1
+
+

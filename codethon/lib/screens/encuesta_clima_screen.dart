@@ -8,20 +8,17 @@ class MunicipioValenciano {
   MunicipioValenciano({required this.nombre, required this.query});
 }
 
-final List<MunicipioValenciano> municipiosValencianos = [
-  MunicipioValenciano(nombre: 'Valencia', query: '39.4699,-0.3763'),
-  MunicipioValenciano(nombre: 'Torrent', query: '39.4375,-0.4647'),
-  MunicipioValenciano(nombre: 'Gandía', query: '38.9681,-0.1830'),
-  MunicipioValenciano(nombre: 'Paterna', query: '39.5021,-0.4408'),
-  MunicipioValenciano(nombre: 'Sagunto', query: '39.6796,-0.2784'),
-  MunicipioValenciano(nombre: 'Xirivella', query: '39.4667,-0.4333'),
-  MunicipioValenciano(nombre: 'Alzira', query: '39.1506,-0.4356'),
-  MunicipioValenciano(nombre: 'Ontinyent', query: '38.8167,-0.6000'),
-  MunicipioValenciano(nombre: 'Mislata', query: '39.4766,-0.4162'),
-  MunicipioValenciano(nombre: 'Manises', query: '39.4889,-0.4632'),
-  MunicipioValenciano(nombre: 'Cullera', query: '39.1667,-0.25'),
-  MunicipioValenciano(nombre: 'Burjassot', query: '39.50952,-0.41346'),
-];
+  final List<MunicipioValenciano> municipiosValencianos = [
+    MunicipioValenciano(nombre: 'Valencia', query: '39.4699,-0.3763'),
+    MunicipioValenciano(nombre: 'Manises', query: '39.4889,-0.4632'),
+    MunicipioValenciano(nombre: 'Gandía', query: '38.9681,-0.1830'),
+    MunicipioValenciano(nombre: 'Ontinyent', query: '38.8167,-0.6000'),
+    MunicipioValenciano(nombre: 'Sagunto', query: '39.6796,-0.2784'),
+    MunicipioValenciano(nombre: 'Xirivella', query: '39.4667,-0.4333'),
+    MunicipioValenciano(nombre: 'Alzira', query: '39.1506,-0.4356'),
+    MunicipioValenciano(nombre: 'Mislata', query: '39.4766,-0.4162'),
+    MunicipioValenciano(nombre: 'Cullera', query: '39.1667,-0.25'),
+  ];
 
 final List<Map<String, String>> climasLottie = [
   {'label': 'Soleado', 'asset': 'assets/lottie/weather/sunny.json'},
@@ -105,11 +102,11 @@ class _EncuestaClimaPopupState extends State<EncuestaClimaPopup> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
@@ -132,8 +129,8 @@ class _EncuestaClimaPopupState extends State<EncuestaClimaPopup> {
                         child: DropdownButton<MunicipioValenciano>(
   value: municipioSeleccionado,
   isExpanded: true,
-  hint: Row(
-    children: const [
+  hint: const Row(
+    children: [
       Icon(Icons.location_on, color: Colors.blue),
       SizedBox(width: 8),
       Text("Selecciona tu municipio"),
