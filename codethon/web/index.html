@@ -1,110 +1,63 @@
-<!DOCTYPE html><html><head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Demo Flutter App" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi App Flutter</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+      #mobile-frame {
+        width: 375px; /* ancho típico iPhone X */
+        height: 812px; /* alto típico iPhone X */
+        border: 16px solid #000; /* marco negro simulando el móvil */
+        border-radius: 40px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        position: relative;
+      }
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+      #mobile-frame::before {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 8px;
+        background: #333;
+        border-radius: 10px;
+      }
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="This is a weather Application">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="ClimaCollab">
-  <link rel="apple-touch-icon" href="icons/favicon.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
-
-  <title>codethon</title>
-  <link rel="manifest" href="manifest.json">
-  
-  
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  
-  
-  
-  
-  <style id="splash-screen-style">
-    html {
-      height: 100%
-    }
-
-    body {
-      margin: 0;
-      min-height: 100%;
-      background-color: #E6F0FA;
-          background-size: 100% 100%;
-    }
-
-    .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
-    }
-
-    .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
-    }
-
-    .stretch {
-      display:block;
-      width:100%; height:100%;
-    }
-
-    .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
-    }
-
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
-
-    .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-
-    .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-  </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      document.getElementById("splash")?.remove();
-      document.getElementById("splash-branding")?.remove();
-      document.body.style.background = "transparent";
-    }
-  </script>
-</head>
-<body>
-  
-  <script src="flutter_bootstrap.js" async=""></script>
-
-
-</body></html>
+      flutter-view {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mobile-frame">
+      <script src="flutter.js" defer></script>
+      <script>
+        window.addEventListener('load', function(ev) {
+          _flutter.loader.loadEntrypoint({
+            serviceWorker: { serviceWorkerVersion: null },
+            onEntrypointLoaded: function(engineInitializer) {
+              engineInitializer.initializeEngine().then(function(appRunner) {
+                appRunner.runApp();
+              });
+            }
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>
